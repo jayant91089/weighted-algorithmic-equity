@@ -29,7 +29,8 @@ def get_avals_bias(dat, epsilon, epsilon_prime):
     for k, aval in enumerate(avals):
         A_col = (dat['A'] == aval).astype(int)
         A_col_prob = 1 - dat['Pa'] if aval == 0 else dat['Pa']
-        cov_bias_results[k, :] = calculate_bias(dat, A_col=A_col, A_col_prob=A_col_prob, epsilon=epsilon, epsilon_prime=epsilon_prime)
+        bias_dict = calculate_bias(dat, A_col=A_col, A_col_prob=A_col_prob, epsilon=epsilon, epsilon_prime=epsilon_prime)
+        cov_bias_results[k, :] = [bias_dict[var] for var in return_vars_covbias]
     return cov_bias_results.flatten()
 
 def calculate_bias(dat, A_col, A_col_prob, epsilon, epsilon_prime, p_a_input=None, p_Z_input=None, sens_param_3=None, short_return=False):
