@@ -32,26 +32,25 @@ def get_avals_bias(dat, epsilon, epsilon_prime):
         cov_bias_results[k, :] = calculate_bias(dat, A_col=A_col, A_col_prob=A_col_prob, epsilon=epsilon, epsilon_prime=epsilon_prime)
     return cov_bias_results.flatten()
 
-# Calculate bias terms for a specific A=a group
 def calculate_bias(dat, A_col, A_col_prob, epsilon, epsilon_prime, p_a_input=None, p_Z_input=None, sens_param_3=None, short_return=False):
     # Calculate true and weighted FNR, TPR, FPR, TNR, PPV, NPV
-    fnr_true = np.mean((dat['Y'] == 1) & (dat['Yhat'] == 0))
-    fnr_wgt = np.sum((dat['Y'] == 1) & (dat['Yhat'] == 0) * A_col_prob) / np.sum(A_col_prob)
+    fnr_true = np.mean((dat['Y'] == 1) & (dat['Yhat'] == 0) * A_col) / np.mean(A_col * dat['Y'])
+    fnr_wgt = np.sum((dat['Y'] == 1) & (dat['Yhat'] == 0) * A_col_prob) / np.sum(A_col_prob * dat['Y'])
     
-    tpr_true = np.mean((dat['Y'] == 1) & (dat['Yhat'] == 1))
-    tpr_wgt = np.sum((dat['Y'] == 1) & (dat['Yhat'] == 1) * A_col_prob) / np.sum(A_col_prob)
+    tpr_true = np.mean((dat['Y'] == 1) & (dat['Yhat'] == 1) * A_col) / np.mean(A_col * dat['Y'])
+    tpr_wgt = np.sum((dat['Y'] == 1) & (dat['Yhat'] == 1) * A_col_prob) / np.sum(A_col_prob * dat['Y'])
     
-    fpr_true = np.mean((dat['Y'] == 0) & (dat['Yhat'] == 1))
-    fpr_wgt = np.sum((dat['Y'] == 0) & (dat['Yhat'] == 1) * A_col_prob) / np.sum(A_col_prob)
+    fpr_true = np.mean((dat['Y'] == 0) & (dat['Yhat'] == 1) * A_col) / np.mean(A_col * (1 - dat['Y']))
+    fpr_wgt = np.sum((dat['Y'] == 0) & (dat['Yhat'] == 1) * A_col_prob) / np.sum(A_col_prob * (1 - dat['Y']))
     
-    tnr_true = np.mean((dat['Y'] == 0) & (dat['Yhat'] == 0))
-    tnr_wgt = np.sum((dat['Y'] == 0) & (dat['Yhat'] == 0) * A_col_prob) / np.sum(A_col_prob)
+    tnr_true = np.mean((dat['Y'] == 0) & (dat['Yhat'] == 0) * A_col) / np.mean(A_col * (1 - dat['Y']))
+    tnr_wgt = np.sum((dat['Y'] == 0) & (dat['Yhat'] == 0) * A_col_prob) / np.sum(A_col_prob * (1 - dat['Y']))
     
-    ppv_true = np.mean((dat['Yhat'] == 1) & (dat['Y'] == 1))
-    ppv_wgt = np.sum((dat['Yhat'] == 1) & (dat['Y'] == 1) * A_col_prob) / np.sum(A_col_prob)
+    ppv_true = np.mean((dat['Yhat'] == 1) & (dat['Y'] == 1) * A_col) / np.mean(A_col * dat['Yhat'])
+    ppv_wgt = np.sum((dat['Yhat'] == 1) & (dat['Y'] == 1) * A_col_prob) / np.sum(A_col_prob * dat['Yhat'])
     
-    npv_true = np.mean((dat['Yhat'] == 0) & (dat['Y'] == 0))
-    npv_wgt = np.sum((dat['Yhat'] == 0) & (dat['Y'] == 0) * A_col_prob) / np.sum(A_col_prob)
+    npv_true = np.mean((dat['Yhat'] == 0) & (dat['Y'] == 0) * A_col) / np.mean(A_col * (1 - dat['Yhat']))
+    npv_wgt = np.sum((dat['Yhat'] == 0) & (dat['Y'] == 0) * A_col_prob) / np.sum(A_col_prob * (1 - dat['Yhat']))
     
     # Calculate observed bias
     bias_obs_fnr = fnr_wgt - fnr_true
@@ -134,7 +133,6 @@ def calculate_bias(dat, A_col, A_col_prob, epsilon, epsilon_prime, p_a_input=Non
     }
     
     return results
-
 # Simulate a population and calculate metrics
 def sim_bias_pop(param_1, param_2, param_3, N_pop, p_Y):
     # Simulate Z
