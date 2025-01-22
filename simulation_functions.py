@@ -34,10 +34,106 @@ def get_avals_bias(dat, epsilon, epsilon_prime):
 
 # Calculate bias terms for a specific A=a group
 def calculate_bias(dat, A_col, A_col_prob, epsilon, epsilon_prime, p_a_input=None, p_Z_input=None, sens_param_3=None, short_return=False):
-    # Placeholder for the actual implementation
-    # This function should return a vector including: cov1, cov2, bias (full and denominator), alternate versions of 
-    # bias and denominator, true/weighted fnr, true/weighted mu
-    pass
+    # Calculate true and weighted FNR, TPR, FPR, TNR, PPV, NPV
+    fnr_true = np.mean((dat['Y'] == 1) & (dat['Yhat'] == 0))
+    fnr_wgt = np.sum((dat['Y'] == 1) & (dat['Yhat'] == 0) * A_col_prob) / np.sum(A_col_prob)
+    
+    tpr_true = np.mean((dat['Y'] == 1) & (dat['Yhat'] == 1))
+    tpr_wgt = np.sum((dat['Y'] == 1) & (dat['Yhat'] == 1) * A_col_prob) / np.sum(A_col_prob)
+    
+    fpr_true = np.mean((dat['Y'] == 0) & (dat['Yhat'] == 1))
+    fpr_wgt = np.sum((dat['Y'] == 0) & (dat['Yhat'] == 1) * A_col_prob) / np.sum(A_col_prob)
+    
+    tnr_true = np.mean((dat['Y'] == 0) & (dat['Yhat'] == 0))
+    tnr_wgt = np.sum((dat['Y'] == 0) & (dat['Yhat'] == 0) * A_col_prob) / np.sum(A_col_prob)
+    
+    ppv_true = np.mean((dat['Yhat'] == 1) & (dat['Y'] == 1))
+    ppv_wgt = np.sum((dat['Yhat'] == 1) & (dat['Y'] == 1) * A_col_prob) / np.sum(A_col_prob)
+    
+    npv_true = np.mean((dat['Yhat'] == 0) & (dat['Y'] == 0))
+    npv_wgt = np.sum((dat['Yhat'] == 0) & (dat['Y'] == 0) * A_col_prob) / np.sum(A_col_prob)
+    
+    # Calculate observed bias
+    bias_obs_fnr = fnr_wgt - fnr_true
+    bias_obs_abs_fnr = np.abs(bias_obs_fnr)
+    
+    bias_obs_tpr = tpr_wgt - tpr_true
+    bias_obs_abs_tpr = np.abs(bias_obs_tpr)
+    
+    bias_obs_fpr = fpr_wgt - fpr_true
+    bias_obs_abs_fpr = np.abs(bias_obs_fpr)
+    
+    bias_obs_tnr = tnr_wgt - tnr_true
+    bias_obs_abs_tnr = np.abs(bias_obs_tnr)
+    
+    bias_obs_ppv = ppv_wgt - ppv_true
+    bias_obs_abs_ppv = np.abs(bias_obs_ppv)
+    
+    bias_obs_npv = npv_wgt - npv_true
+    bias_obs_abs_npv = np.abs(bias_obs_npv)
+    
+    # Calculate epsilon bias
+    fnr_epsilon = fnr_wgt + epsilon
+    tpr_epsilon = tpr_wgt + epsilon
+    fpr_epsilon = fpr_wgt + epsilon
+    tnr_epsilon = tnr_wgt + epsilon
+    ppv_epsilon = ppv_wgt + epsilon
+    npv_epsilon = npv_wgt + epsilon
+    
+    # Calculate bias bounds
+    bias_bound_abs_fnr = np.abs(fnr_epsilon - fnr_true)
+    bias_bound_abs_tpr = np.abs(tpr_epsilon - tpr_true)
+    bias_bound_abs_fpr = np.abs(fpr_epsilon - fpr_true)
+    bias_bound_abs_tnr = np.abs(tnr_epsilon - tnr_true)
+    bias_bound_abs_ppv = np.abs(ppv_epsilon - ppv_true)
+    bias_bound_abs_npv = np.abs(npv_epsilon - npv_true)
+    
+    # Calculate inequality terms
+    a1_ineq_leftside_fnr = np.abs(fnr_wgt - fnr_true)
+    a1_ineq_rgtside_fnr = np.abs(fnr_epsilon - fnr_true)
+    
+    a1_ineq_leftside_tpr = np.abs(tpr_wgt - tpr_true)
+    a1_ineq_rgtside_tpr = np.abs(tpr_epsilon - tpr_true)
+    
+    a1_ineq_leftside_fpr = np.abs(fpr_wgt - fpr_true)
+    a1_ineq_rgtside_fpr = np.abs(fpr_epsilon - fpr_true)
+    
+    a1_ineq_leftside_tnr = np.abs(tnr_wgt - tnr_true)
+    a1_ineq_rgtside_tnr = np.abs(tnr_epsilon - tnr_true)
+    
+    a1_ineq_leftside_ppv = np.abs(ppv_wgt - ppv_true)
+    a1_ineq_rgtside_ppv = np.abs(ppv_epsilon - ppv_true)
+    
+    a1_ineq_leftside_npv = np.abs(npv_wgt - npv_true)
+    a1_ineq_rgtside_npv = np.abs(npv_epsilon - npv_true)
+    
+    # Calculate true bias
+    bias_true_fnr = fnr_wgt - fnr_true
+    
+    # Combine results into a dictionary
+    results = {
+        'fnr_true': fnr_true, 'fnr_wgt': fnr_wgt, 'tpr_true': tpr_true, 'tpr_wgt': tpr_wgt,
+        'fpr_true': fpr_true, 'fpr_wgt': fpr_wgt, 'tnr_true': tnr_true, 'tnr_wgt': tnr_wgt,
+        'ppv_true': ppv_true, 'ppv_wgt': ppv_wgt, 'npv_true': npv_true, 'npv_wgt': npv_wgt,
+        'bias_obs_fnr': bias_obs_fnr, 'bias_obs_abs_fnr': bias_obs_abs_fnr, 'bias_obs_tpr': bias_obs_tpr,
+        'bias_obs_abs_tpr': bias_obs_abs_tpr, 'bias_obs_fpr': bias_obs_fpr, 'bias_obs_abs_fpr': bias_obs_abs_fpr,
+        'bias_obs_tnr': bias_obs_tnr, 'bias_obs_abs_tnr': bias_obs_abs_tnr, 'bias_obs_ppv': bias_obs_ppv,
+        'bias_obs_abs_ppv': bias_obs_abs_ppv, 'bias_obs_npv': bias_obs_npv, 'bias_obs_abs_npv': bias_obs_abs_npv,
+        'fnr_epsilon': fnr_epsilon, 'tpr_epsilon': tpr_epsilon, 'fpr_epsilon': fpr_epsilon, 'tnr_epsilon': tnr_epsilon,
+        'ppv_epsilon': ppv_epsilon, 'npv_epsilon': npv_epsilon, 'bias_true_fnr': bias_true_fnr,
+        'bias_bound_abs_fnr': bias_bound_abs_fnr, 'bias_bound_abs_tpr': bias_bound_abs_tpr, 'bias_bound_abs_fpr': bias_bound_abs_fpr,
+        'bias_bound_abs_tnr': bias_bound_abs_tnr, 'bias_bound_abs_ppv': bias_bound_abs_ppv, 'bias_bound_abs_npv': bias_bound_abs_npv,
+        'a1_ineq_leftside_fnr': a1_ineq_leftside_fnr, 'a1_ineq_rgtside_fnr': a1_ineq_rgtside_fnr,
+        'a1_ineq_leftside_tpr': a1_ineq_leftside_tpr, 'a1_ineq_rgtside_tpr': a1_ineq_rgtside_tpr,
+        'a1_ineq_leftside_fpr': a1_ineq_leftside_fpr, 'a1_ineq_rgtside_fpr': a1_ineq_rgtside_fpr,
+        'a1_ineq_leftside_tnr': a1_ineq_leftside_tnr, 'a1_ineq_rgtside_tnr': a1_ineq_rgtside_tnr,
+        'a1_ineq_leftside_ppv': a1_ineq_leftside_ppv, 'a1_ineq_rgtside_ppv': a1_ineq_rgtside_ppv,
+        'a1_ineq_leftside_npv': a1_ineq_leftside_npv, 'a1_ineq_rgtside_npv': a1_ineq_rgtside_npv,
+        'bias_epsilon_fnr': bias_bound_abs_fnr, 'bias_epsilon_tpr': bias_bound_abs_tpr, 'bias_epsilon_fpr': bias_bound_abs_fpr,
+        'bias_epsilon_tnr': bias_bound_abs_tnr, 'bias_epsilon_ppv': bias_bound_abs_ppv, 'bias_epsilon_npv': bias_bound_abs_npv
+    }
+    
+    return results
 
 # Simulate a population and calculate metrics
 def sim_bias_pop(param_1, param_2, param_3, N_pop, p_Y):
