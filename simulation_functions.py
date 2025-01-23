@@ -110,6 +110,17 @@ def calculate_bias(dat, A_col, A_col_prob, epsilon, epsilon_prime, p_a_input=Non
     # Calculate true bias
     bias_true_fnr = fnr_wgt - fnr_true
     
+    # Calculate margin metrics
+    margin_fnr = fnr_wgt - fnr_true
+    margin_tpr = tpr_wgt - tpr_true
+    margin_fpr = fpr_wgt - fpr_true
+    margin_tnr = tnr_wgt - tnr_true
+    margin_ppv = ppv_wgt - ppv_true
+    margin_npv = npv_wgt - npv_true
+    
+    # Calculate pa_ratio
+    pa_ratio = np.mean(A_col_prob) / np.mean(A_col)
+    
     # Combine results into a dictionary
     results = {
         'fnr_true': fnr_true, 'fnr_wgt': fnr_wgt, 'tpr_true': tpr_true, 'tpr_wgt': tpr_wgt,
@@ -130,10 +141,12 @@ def calculate_bias(dat, A_col, A_col_prob, epsilon, epsilon_prime, p_a_input=Non
         'a1_ineq_leftside_ppv': a1_ineq_leftside_ppv, 'a1_ineq_rgtside_ppv': a1_ineq_rgtside_ppv,
         'a1_ineq_leftside_npv': a1_ineq_leftside_npv, 'a1_ineq_rgtside_npv': a1_ineq_rgtside_npv,
         'bias_epsilon_fnr': bias_bound_abs_fnr, 'bias_epsilon_tpr': bias_bound_abs_tpr, 'bias_epsilon_fpr': bias_bound_abs_fpr,
-        'bias_epsilon_tnr': bias_bound_abs_tnr, 'bias_epsilon_ppv': bias_bound_abs_ppv, 'bias_epsilon_npv': bias_bound_abs_npv
+        'bias_epsilon_tnr': bias_bound_abs_tnr, 'bias_epsilon_ppv': bias_bound_abs_ppv, 'bias_epsilon_npv': bias_bound_abs_npv,
+        'margin_fnr': margin_fnr, 'margin_tpr': margin_tpr, 'margin_fpr': margin_fpr, 'margin_tnr': margin_tnr,
+        'margin_ppv': margin_ppv, 'margin_npv': margin_npv, 'pa_ratio': pa_ratio
     }
-    
     return results
+    
 # Simulate a population and calculate metrics
 def sim_bias_pop(param_1, param_2, param_3, N_pop, p_Y):
     # Simulate Z
